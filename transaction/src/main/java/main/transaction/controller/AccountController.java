@@ -1,8 +1,11 @@
 package main.transaction.controller;
 
 import main.transaction.dto.TransferRequest;
+import main.transaction.exception.AccountNotFoundException;
+import main.transaction.exception.NotEnoughMoneyException;
 import main.transaction.model.Account;
 import main.transaction.model.Log;
+import main.transaction.model.SortingPaginationSettings;
 import main.transaction.service.AccountService;
 import main.transaction.service.ConversionService;
 import main.transaction.service.LogService;
@@ -11,7 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class AccountController {
@@ -32,86 +38,120 @@ public class AccountController {
     }
 
     @PostMapping("/transfer")
-    public void transferMoney(
+    public ResponseEntity<?> transferMoney(
             @RequestBody TransferRequest body
     ) {
-        moneyService.transferMoney(
-                body.getSenderAccountId(),
-                body.getReceiverAccountId(),
-                body.getAmount()
-        );
+
+        try {
+            List<Account> requestlist = moneyService.transferMoney(
+                    body.getSenderAccountId(),
+                    body.getReceiverAccountId(),
+                    body.getAmount()
+            );
+            return new ResponseEntity<List<Account>>(requestlist, HttpStatus.OK);
+        } catch (AccountNotFoundException | NotEnoughMoneyException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @GetMapping("/accounts")
-    public Iterable<Account> getAllAccounts(
-            @RequestParam(required = false) String name
-    ) {
-        if (name == null) {
-            return accountService.getAllAccounts();
-        } else {
-            return accountService.findAccountByName(name);
-        }
-    }
-
-    @GetMapping("/account")
-    public Iterable<Account> getAccount(
+    public ResponseEntity<?> getAllAccounts(
+            @RequestParam(defaultValue = "") String name,
             @RequestParam(required = false) Long id
     ) {
-        if (id == null) {
-            return accountService.getAllAccounts();
-        } else {
-            return accountService.findAccountById(id);
+        try {
+            if (name.isEmpty()) {
+                if (id != null) {
+                    return new ResponseEntity<List<Account>>(accountService.findAccountById(id), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<Iterable<Account>>(accountService.getAllAccounts(), HttpStatus.OK);
+                }
+            } else {
+                return new ResponseEntity<List<Account>>(accountService.findAccountsByName(name), HttpStatus.OK);
+            }
+        } catch (AccountNotFoundException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+
     }
 
 
-    @PostMapping("/set")
+    @PostMapping("/creation")
     public void setAccount(
             @RequestBody Account account
     ) {
         accountService.setAccount(account.getName());
     }
 
-    @PostMapping("/delete")
-    public void deleteAccount(
+    @PostMapping("/deletion")
+    public ResponseEntity<String> deleteAccount(
             @RequestBody Account account
     ) {
-        accountService.deleteAccount(account.getName());
+        try {
+            accountService.deleteAccount(account.getName());
+            return new ResponseEntity<>("Deleted!", HttpStatus.OK);
+        } catch (AccountNotFoundException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @PostMapping("/add")
-    public void addMoney(
+    public ResponseEntity<?> addMoney(
             @RequestBody Account account
     ) {
-        moneyService.addMoney(account.getId(), account.getAmount());
+        try {
+            account = moneyService.addMoney(account.getId(), account.getAmount());
+            return new ResponseEntity<Account>(account, HttpStatus.ACCEPTED);
+        } catch (AccountNotFoundException | NotEnoughMoneyException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @PostMapping("/subtract")
-    public void subtractMoney(
+    public ResponseEntity<?> subtractMoney(
             @RequestBody Account account
     ) {
-        moneyService.subtractMoney(account.getId(), account.getAmount());
+        try {
+
+            account = moneyService.subtractMoney(account.getId(), account.getAmount());
+            return new ResponseEntity<Account>(account, HttpStatus.OK);
+        } catch (AccountNotFoundException | NotEnoughMoneyException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/convert")
-    public ResponseEntity<Account> convert(@RequestParam long id,
+    public ResponseEntity<?> convert(@RequestParam long id,
                                            @RequestParam String valute
     ) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(conversionService.convertMoney(id, valute));
+        try {
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(conversionService.convertMoney(id, valute));
+        } catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
     }
 
     @GetMapping("/log")
     public ResponseEntity<List<Log>> logging(
-            @RequestParam(defaultValue = "0") Integer pageNum,
+            /*@RequestParam(defaultValue = "0") Integer pageNum,
             @RequestParam(defaultValue = "3") Integer pageSize,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "desc") String orderQue,
-            @RequestParam(required = true) Long accountid
+            @RequestParam(required = true) Long accountid*/
+            @RequestBody SortingPaginationSettings sortingPaginationSettings
     ) {
+        if (!sortingPaginationSettings.getOrderQue().equals("asc") && !sortingPaginationSettings.getOrderQue().equals("desc")) {
+            return new ResponseEntity<List<Log>>(HttpStatus.BAD_REQUEST);
+        }
 
-        List<Log> accountList = logService.getAllAccounts(pageNum, pageSize, sortBy, orderQue, accountid);
+        List<Log> accountList = logService.getAllAccounts(sortingPaginationSettings.getPageNum(), sortingPaginationSettings.getPageSize(), sortingPaginationSettings.getSortBy(), sortingPaginationSettings.getOrderQue(), sortingPaginationSettings.getAccountid());
 
         return new ResponseEntity<List<Log>>(accountList, HttpStatus.OK);
 

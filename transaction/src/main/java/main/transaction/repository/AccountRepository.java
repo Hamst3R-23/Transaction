@@ -26,10 +26,20 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     @Query("UPDATE account SET amount = :amount WHERE id = :id")
     void changeAmount(long id, BigDecimal amount);
 
+    @Query("SELECT EXISTS(SELECT * FROM account where name = :name)")
+    Boolean checkAccountByName(String name);
+
     @Query("SELECT EXISTS(SELECT * FROM account where id = :id)")
-    Boolean checkAccount(long id);
+    Boolean checkAccountById(long id);
 
     @Query("SELECT * FROM account where id = :id")
     List<Account> findAccountsById(long id);
+
+    @Query("SELECT * FROM account where id = :id")
+    Account findAccountById(long id);
+
+
+    @Query("SELECT amount FROM account where id = :id")
+    BigDecimal getAmountById(long id);
 
 }

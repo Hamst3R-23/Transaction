@@ -22,7 +22,6 @@ public class LogService {
         this.logRepository = logRepository;
     }
 
-
     public List<Log> getAllAccounts(Integer pageNo, Integer pageSize, String sortBy, String orderQue, long accountid) {
 
         Order order = new Order(Sort.Direction.fromString(orderQue), sortBy);

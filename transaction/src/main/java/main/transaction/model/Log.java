@@ -21,6 +21,10 @@ public class Log {
     private String log;
 
 
+    public Log(String log) {
+        this.log = log;
+    }
+
     public long getId() {
         return id;
     }

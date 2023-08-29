@@ -1,9 +1,11 @@
 package main.transaction.service;
 
+import main.transaction.exception.AccountNotFoundException;
 import main.transaction.model.Account;
 import main.transaction.repository.AccountRepository;
 import main.transaction.repository.LogRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -17,6 +19,8 @@ public class AccountService {
 
     private final LogRepository logRepository;
 
+    private String logText;
+
 
     public AccountService(AccountRepository accountRepository, LogRepository logRepository) {
         this.accountRepository = accountRepository;
@@ -27,16 +31,23 @@ public class AccountService {
         setAccount(name, BigDecimal.ZERO);
     }
 
+    @Transactional
     public void setAccount(String name, BigDecimal amount) {
         Account account = new Account();
         account.setName(name);
         account.setAmount(amount);
         accountRepository.save(account);
-        logRepository.insertLogInfo(account.getId(), "setAccount", amount, "New account created: name:" + name + " id:" + account.getId());
+        logText = String.format("New account created: name: %s with id: %d", name, account.getId());
+        logRepository.insertLogInfo(account.getId(), "setAccount", amount, logText);
     }
 
+    @Transactional
     public void deleteAccount(String name) {
-        logRepository.insertLogInfo(accountRepository.findAccountByName(name), "deleteAccount", null, "Delete account: name:" + name + " id:" + accountRepository.findAccountByName(name));
+        if (!accountRepository.checkAccountByName(name)) {
+            throw new AccountNotFoundException("Wrong name!");
+        }
+        logText = String.format("Delete account: name: %s with id: %d", name, accountRepository.findAccountByName(name));
+        logRepository.insertLogInfo(accountRepository.findAccountByName(name), "deleteAccount", BigDecimal.ZERO, logText);
         accountRepository.deleteAccountByName(name);
     }
 
@@ -44,13 +55,18 @@ public class AccountService {
         return accountRepository.findAll();
     }
 
-    public List<Account> findAccountById(long id){
+    public List<Account> findAccountById(long id) {
+        if (!accountRepository.checkAccountById(id)) {
+            throw new AccountNotFoundException("Wrong ID!");
+        }
         return accountRepository.findAccountsById(id);
     }
 
 
-
-    public List<Account> findAccountByName(String name) {
+    public List<Account> findAccountsByName(String name) {
+        if (!accountRepository.checkAccountByName(name)) {
+            throw new AccountNotFoundException("Wrong name!");
+        }
         return accountRepository.findAccountsByName(name);
     }
 
