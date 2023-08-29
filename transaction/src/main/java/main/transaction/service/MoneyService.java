@@ -1,5 +1,6 @@
 package main.transaction.service;
 
+import main.transaction.enums.LogOperationEnum;
 import main.transaction.exception.AccountNotFoundException;
 import main.transaction.exception.NotEnoughMoneyException;
 import main.transaction.model.Account;
@@ -35,7 +36,7 @@ public class MoneyService {
         BigDecimal newAccountAmount = account.getAmount().add(amount);
         accountRepository.changeAmount(id, newAccountAmount);
         logText = String.format("Added money (%.2f) to %s  with id: %d", amount, account.getName(), id);
-        logRepository.insertLogInfo(id, "addMoney", amount, logText);
+        logRepository.insertLogInfo(id, LogOperationEnum.addMoney.getOperation(), amount, logText);
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new NotEnoughMoneyException("Negative amount request!");
@@ -53,7 +54,7 @@ public class MoneyService {
         }
         accountRepository.changeAmount(id, newAccountAmount);
         logText = String.format("Subtracted money (%.2f) from %s  with id: %d", amount, account.getName(), id);
-        logRepository.insertLogInfo(id, "subtractMoney", amount, logText);
+        logRepository.insertLogInfo(id, LogOperationEnum.subtractMoney.getOperation(), amount, logText);
 
         return accountRepository.findAccountById(id);
 
@@ -82,11 +83,11 @@ public class MoneyService {
 
         logText = String.format("%s with id %d transferred money (%.2f) to %s with id %d ", sender.getName(), idSender, amount, receiver.getName(), idReceiver);
 
-        logRepository.insertLogInfo(idSender, "transferMoney", amount, logText);
+        logRepository.insertLogInfo(idSender, LogOperationEnum.transferMoney.getOperation(), amount, logText);
 
         logText = String.format("%s with id %d got money (%.2f) from %s with id %d ", receiver.getName(), idReceiver, amount, sender.getName(), idSender);
 
-        logRepository.insertLogInfo(idReceiver, "transferMoney", amount, logText);
+        logRepository.insertLogInfo(idReceiver, LogOperationEnum.transferMoney.getOperation(), amount, logText);
 
         List<Account> requestList = new ArrayList<>();
         requestList.add(accountRepository.findAccountById(idSender));

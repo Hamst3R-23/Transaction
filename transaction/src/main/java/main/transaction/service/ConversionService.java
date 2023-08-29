@@ -1,7 +1,9 @@
 package main.transaction.service;
 
 
+import main.transaction.enums.LogOperationEnum;
 import main.transaction.exception.AccountNotFoundException;
+import main.transaction.exception.ParserException;
 import main.transaction.httprequest.HttpRequest;
 import main.transaction.model.Account;
 import main.transaction.parser.ParserXml;
@@ -40,11 +42,15 @@ public class ConversionService {
 
         BigDecimal valuteAmount = ParserXml.parse(valute, new InputSource(new StringReader(httpRequest.getRequest()))).getValue();
 
-        account.setAmount(account.getAmount().divide(valuteAmount, 2, RoundingMode.HALF_UP));
+        if (valuteAmount.compareTo(BigDecimal.ZERO) == 0){
+            throw new ParserException("Wrong name of valute!");
+        }
+
+        account.setAmount(account.getAmount().divide(valuteAmount, 2, RoundingMode.HALF_EVEN));
 
         logText = String.format("%s  with id: %d converted his amount to %s (%.2f)", account.getName(), id, valute, account.getAmount());
 
-        logRepository.insertLogInfo(id, "convertMoney", accountRepository.getAmountById(id), logText);
+        logRepository.insertLogInfo(id, LogOperationEnum.convertMoney.getOperation(), accountRepository.getAmountById(id), logText);
 
         return account;
 

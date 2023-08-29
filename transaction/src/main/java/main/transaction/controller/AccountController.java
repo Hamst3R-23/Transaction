@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 public class AccountController {
@@ -37,7 +34,7 @@ public class AccountController {
         this.logService = logService;
     }
 
-    @PostMapping("/transfer")
+    @PostMapping("/money/transfer")
     public ResponseEntity<?> transferMoney(
             @RequestBody TransferRequest body
     ) {
@@ -77,14 +74,15 @@ public class AccountController {
     }
 
 
-    @PostMapping("/creation")
-    public void setAccount(
+    @PostMapping("/account/creation")
+    public ResponseEntity<String> setAccount(
             @RequestBody Account account
     ) {
         accountService.setAccount(account.getName());
+        return new ResponseEntity<String>("Account created",HttpStatus.OK);
     }
 
-    @PostMapping("/deletion")
+    @PostMapping("/account/deletion")
     public ResponseEntity<String> deleteAccount(
             @RequestBody Account account
     ) {
@@ -97,7 +95,7 @@ public class AccountController {
 
     }
 
-    @PostMapping("/add")
+    @PostMapping("/money/addition")
     public ResponseEntity<?> addMoney(
             @RequestBody Account account
     ) {
@@ -110,7 +108,7 @@ public class AccountController {
 
     }
 
-    @PostMapping("/subtract")
+    @PostMapping("/money/subtract")
     public ResponseEntity<?> subtractMoney(
             @RequestBody Account account
     ) {
@@ -123,7 +121,7 @@ public class AccountController {
         }
     }
 
-    @GetMapping("/convert")
+    @GetMapping("/money/conversion")
     public ResponseEntity<?> convert(@RequestParam long id,
                                            @RequestParam String valute
     ) {
@@ -139,7 +137,7 @@ public class AccountController {
     }
 
     @GetMapping("/log")
-    public ResponseEntity<List<Log>> logging(
+    public ResponseEntity<?> logging(
             /*@RequestParam(defaultValue = "0") Integer pageNum,
             @RequestParam(defaultValue = "3") Integer pageSize,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -147,14 +145,16 @@ public class AccountController {
             @RequestParam(required = true) Long accountid*/
             @RequestBody SortingPaginationSettings sortingPaginationSettings
     ) {
-        if (!sortingPaginationSettings.getOrderQue().equals("asc") && !sortingPaginationSettings.getOrderQue().equals("desc")) {
-            return new ResponseEntity<List<Log>>(HttpStatus.BAD_REQUEST);
+
+        try {
+            List<Log> logtList = logService.getAllLog(sortingPaginationSettings.getPageNum(), sortingPaginationSettings.getPageSize(), sortingPaginationSettings.getSortBy(), sortingPaginationSettings.getOrderQue(), sortingPaginationSettings.getAccountid());
+
+            return new ResponseEntity<List<Log>>(logtList, HttpStatus.OK);
+        } catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         }
-
-        List<Log> accountList = logService.getAllAccounts(sortingPaginationSettings.getPageNum(), sortingPaginationSettings.getPageSize(), sortingPaginationSettings.getSortBy(), sortingPaginationSettings.getOrderQue(), sortingPaginationSettings.getAccountid());
-
-        return new ResponseEntity<List<Log>>(accountList, HttpStatus.OK);
-
     }
 
 }

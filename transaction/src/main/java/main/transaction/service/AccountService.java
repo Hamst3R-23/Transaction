@@ -1,5 +1,6 @@
 package main.transaction.service;
 
+import main.transaction.enums.LogOperationEnum;
 import main.transaction.exception.AccountNotFoundException;
 import main.transaction.model.Account;
 import main.transaction.repository.AccountRepository;
@@ -8,9 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AccountService {
@@ -47,7 +46,7 @@ public class AccountService {
             throw new AccountNotFoundException("Wrong name!");
         }
         logText = String.format("Delete account: name: %s with id: %d", name, accountRepository.findAccountByName(name));
-        logRepository.insertLogInfo(accountRepository.findAccountByName(name), "deleteAccount", BigDecimal.ZERO, logText);
+        logRepository.insertLogInfo(accountRepository.findAccountByName(name), LogOperationEnum.deleteAccount.getOperation(), BigDecimal.ZERO, logText);
         accountRepository.deleteAccountByName(name);
     }
 
