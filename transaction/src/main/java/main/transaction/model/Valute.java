@@ -8,7 +8,6 @@ public class Valute {
 
     private BigDecimal value = BigDecimal.ZERO;
 
-
     public String getName() {
         return name;
     }
@@ -32,4 +31,5 @@ public class Valute {
                 ", value=" + value +
                 '}';
     }
+
 }

@@ -72,4 +72,5 @@ public class Log {
     public void setLog(String log) {
         this.log = log;
     }
+
 }

@@ -5,8 +5,7 @@ public class SortingPaginationSettings {
     private int pageNum = 0;
     private int pageSize = 3;
     private String sortBy = "id";
-    private String orderQue = "desc";
-
+    private String orderDirection = "desc";
     private Long accountid;
 
 
@@ -34,12 +33,12 @@ public class SortingPaginationSettings {
         this.sortBy = sortBy;
     }
 
-    public String getOrderQue() {
-        return orderQue;
+    public String getOrderDirection() {
+        return orderDirection;
     }
 
-    public void setOrderQue(String orderQue) {
-        this.orderQue = orderQue;
+    public void setOrderDirection(String orderDirection) {
+        this.orderDirection = orderDirection;
     }
 
     public Long getAccountid() {
