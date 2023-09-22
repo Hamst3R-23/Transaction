@@ -1,11 +1,7 @@
 package main.transaction.controller;
 
 import main.transaction.dto.TransferRequest;
-import main.transaction.exception.AccountNotFoundException;
-import main.transaction.exception.NotEnoughMoneyException;
-import main.transaction.model.Account;
-import main.transaction.model.Log;
-import main.transaction.model.SortingPaginationSettings;
+import main.transaction.model.*;
 import main.transaction.service.AccountService;
 import main.transaction.service.ConversionService;
 import main.transaction.service.LogService;
@@ -35,126 +31,63 @@ public class AccountController {
     }
 
     @PostMapping("/money/transfer")
-    public ResponseEntity<?> transferMoney(
-            @RequestBody TransferRequest body
-    ) {
-
-        try {
-            List<Account> requestlist = moneyService.transferMoney(
-                    body.getSenderAccountId(),
-                    body.getReceiverAccountId(),
-                    body.getAmount()
-            );
-            return new ResponseEntity<List<Account>>(requestlist, HttpStatus.OK);
-        } catch (AccountNotFoundException | NotEnoughMoneyException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<List<Account>> transferMoney(@RequestBody TransferRequest body) {
+        List<Account> requestlist = moneyService.transferMoney(body.getSenderAccountId(), body.getReceiverAccountId(), body.getAmount());
+        return new ResponseEntity<>(requestlist, HttpStatus.OK);
 
     }
 
     @GetMapping("/accounts")
-    public ResponseEntity<?> getAllAccounts(
-            @RequestParam(defaultValue = "") String name,
-            @RequestParam(required = false) Long id
-    ) {
-        try {
-            if (name.isEmpty()) {
-                if (id != null) {
-                    return new ResponseEntity<List<Account>>(accountService.findAccountById(id), HttpStatus.OK);
-                } else {
-                    return new ResponseEntity<Iterable<Account>>(accountService.getAllAccounts(), HttpStatus.OK);
-                }
+    public ResponseEntity<List<Account>> getAllAccounts(@RequestParam(defaultValue = "") String name, @RequestParam(required = false) Long id) {
+        if (name.isEmpty()) {
+            if (id != null) {
+                return new ResponseEntity<>(accountService.findAccountById(id), HttpStatus.OK);
             } else {
-                return new ResponseEntity<List<Account>>(accountService.findAccountsByName(name), HttpStatus.OK);
+                return new ResponseEntity<>(accountService.getAllAccounts(), HttpStatus.OK);
             }
-        } catch (AccountNotFoundException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(accountService.findAccountsByName(name), HttpStatus.OK);
         }
 
     }
 
 
     @PostMapping("/account/creation")
-    public ResponseEntity<String> setAccount(
-            @RequestBody Account account
-    ) {
+    public ResponseEntity<JsonResponseToCreateDeleteOperationsModel> setAccount(@RequestBody Account account) {
         accountService.setAccount(account.getName());
-        return new ResponseEntity<String>("Account created",HttpStatus.OK);
+        return new ResponseEntity<>(new JsonResponseToCreateDeleteOperationsModel("Account created"), HttpStatus.OK);
     }
 
-    @PostMapping("/account/deletion")
-    public ResponseEntity<String> deleteAccount(
-            @RequestBody Account account
-    ) {
-        try {
-            accountService.deleteAccount(account.getName());
-            return new ResponseEntity<>("Deleted!", HttpStatus.OK);
-        } catch (AccountNotFoundException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    @DeleteMapping("/account/deletion")
+    public ResponseEntity<JsonResponseToCreateDeleteOperationsModel> deleteAccount(@RequestBody Account account) {
+        accountService.deleteAccount(account.getName());
+        return new ResponseEntity<>(new JsonResponseToCreateDeleteOperationsModel("Deleted!"), HttpStatus.OK);
 
     }
 
     @PostMapping("/money/addition")
-    public ResponseEntity<?> addMoney(
-            @RequestBody Account account
-    ) {
-        try {
-            account = moneyService.addMoney(account.getId(), account.getAmount());
-            return new ResponseEntity<Account>(account, HttpStatus.ACCEPTED);
-        } catch (AccountNotFoundException | NotEnoughMoneyException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Account> addMoney(@RequestBody Account account) {
+
+        account = moneyService.addMoney(account.getId(), account.getAmount());
+        return new ResponseEntity<>(account, HttpStatus.ACCEPTED);
 
     }
 
     @PostMapping("/money/subtract")
-    public ResponseEntity<?> subtractMoney(
-            @RequestBody Account account
-    ) {
-        try {
-
-            account = moneyService.subtractMoney(account.getId(), account.getAmount());
-            return new ResponseEntity<Account>(account, HttpStatus.OK);
-        } catch (AccountNotFoundException | NotEnoughMoneyException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Account> subtractMoney(@RequestBody Account account) {
+        account = moneyService.subtractMoney(account.getId(), account.getAmount());
+        return new ResponseEntity<>(account, HttpStatus.OK);
     }
 
     @GetMapping("/money/conversion")
-    public ResponseEntity<?> convert(@RequestParam long id,
-                                           @RequestParam String valute
-    ) {
-        try {
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(conversionService.convertMoney(id, valute));
-        } catch (Exception e){
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<Account> convert(@RequestParam long id, @RequestParam String valute) {
+        return ResponseEntity.status(HttpStatus.OK).body(conversionService.convertMoney(id, valute));
     }
 
     @GetMapping("/log")
-    public ResponseEntity<?> logging(
-            /*@RequestParam(defaultValue = "0") Integer pageNum,
-            @RequestParam(defaultValue = "3") Integer pageSize,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String orderQue,
-            @RequestParam(required = true) Long accountid*/
-            @RequestBody SortingPaginationSettings sortingPaginationSettings
-    ) {
-
-        try {
-            List<Log> logtList = logService.getAllLog(sortingPaginationSettings.getPageNum(), sortingPaginationSettings.getPageSize(), sortingPaginationSettings.getSortBy(), sortingPaginationSettings.getOrderQue(), sortingPaginationSettings.getAccountid());
-
-            return new ResponseEntity<List<Log>>(logtList, HttpStatus.OK);
-        } catch (Exception e){
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    public ResponseEntity<JsonResponseToGetLogOperationModel> logging(@RequestBody SortingPaginationSettings sortingPaginationSettings) throws ClassNotFoundException {
+        List<Log> logtList = logService.getAllLog(sortingPaginationSettings.getPageNum(), sortingPaginationSettings.getPageSize(), sortingPaginationSettings.getSortBy(), sortingPaginationSettings.getOrderDirection(), sortingPaginationSettings.getAccountid());
+        return new ResponseEntity<>(new JsonResponseToGetLogOperationModel(logtList), HttpStatus.OK);
     }
 
 }
