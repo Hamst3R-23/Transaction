@@ -2,13 +2,12 @@ package main.transaction.enums;
 
 
 public enum LogOperationEnum {
-    deleteAccount("deleteAccount"),
-    setAccount("setAccount"),
-    addMoney("addMoney"),
-    subtractMoney("subtractMoney"),
-    transferMoney("transferMoney"),
-    convertMoney("convertMoney");
-
+    DELETE_ACCOUNT("deleteAccount"),
+    SET_ACCOUNT("setAccount"),
+    ADD_MONEY("addMoney"),
+    SUBTRACT_MONEY("subtractMoney"),
+    TRANSFER_MONEY("transferMoney"),
+    CONVERT_MONEY("convertMoney");
 
     private final String operation;
 
