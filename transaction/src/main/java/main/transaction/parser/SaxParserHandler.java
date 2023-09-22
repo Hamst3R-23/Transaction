@@ -22,11 +22,11 @@ public class SaxParserHandler extends DefaultHandler {
 
     private boolean isValute = false;
 
+    Valute valute = new Valute();
+
     public SaxParserHandler(String valuteName) {
         this.valuteNameHandler = valuteName;
     }
-
-    Valute valute = new Valute();
 
     public Valute getValute() {
         return valute;

@@ -1,6 +1,5 @@
 package main.transaction.parser;
 
-import main.transaction.exception.HttpRequestException;
 import main.transaction.exception.ParserException;
 import main.transaction.model.Valute;
 import org.xml.sax.InputSource;
@@ -21,10 +20,11 @@ public class ParserXml {
         try {
             parser = factory.newSAXParser();
             parser.parse(http, handler);
-        }  catch (ParserConfigurationException | IOException | SAXException e) {
+        } catch (ParserConfigurationException | IOException | SAXException e) {
             throw new ParserException("Parser exception");
         }
 
         return handler.getValute();
     }
+
 }
