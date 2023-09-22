@@ -4,7 +4,6 @@ import main.transaction.enums.LogOperationEnum;
 import main.transaction.exception.AccountNotFoundException;
 import main.transaction.exception.NotEnoughMoneyException;
 import main.transaction.model.Account;
-import main.transaction.model.Log;
 import main.transaction.repository.AccountRepository;
 import main.transaction.repository.LogRepository;
 import org.springframework.stereotype.Service;
@@ -29,20 +28,20 @@ public class MoneyService {
         this.logRepository = logRepository;
     }
 
-
     public Account addMoney(long id, BigDecimal amount) {
-
-        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Wrong ID!"));
-        BigDecimal newAccountAmount = account.getAmount().add(amount);
-        accountRepository.changeAmount(id, newAccountAmount);
-        logText = String.format("Added money (%.2f) to %s  with id: %d", amount, account.getName(), id);
-        logRepository.insertLogInfo(id, LogOperationEnum.addMoney.getOperation(), amount, logText);
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new NotEnoughMoneyException("Negative amount request!");
         }
 
-        return accountRepository.findAccountById(id);
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Wrong ID!"));
+        BigDecimal newAccountAmount = account.getAmount().add(amount);
+        accountRepository.changeAmount(id, newAccountAmount);
+
+        logText = String.format("Added money (%.2f) to %s  with id: %d", amount, account.getName(), id);
+        logRepository.insertLogInfo(id, LogOperationEnum.ADD_MONEY.getOperation(), amount, logText);
+
+        return account;
     }
 
     public Account subtractMoney(long id, BigDecimal amount) {
@@ -54,9 +53,9 @@ public class MoneyService {
         }
         accountRepository.changeAmount(id, newAccountAmount);
         logText = String.format("Subtracted money (%.2f) from %s  with id: %d", amount, account.getName(), id);
-        logRepository.insertLogInfo(id, LogOperationEnum.subtractMoney.getOperation(), amount, logText);
+        logRepository.insertLogInfo(id, LogOperationEnum.SUBTRACT_MONEY.getOperation(), amount, logText);
 
-        return accountRepository.findAccountById(id);
+        return account;
 
     }
 
@@ -83,14 +82,16 @@ public class MoneyService {
 
         logText = String.format("%s with id %d transferred money (%.2f) to %s with id %d ", sender.getName(), idSender, amount, receiver.getName(), idReceiver);
 
-        logRepository.insertLogInfo(idSender, LogOperationEnum.transferMoney.getOperation(), amount, logText);
+        logRepository.insertLogInfo(idSender, LogOperationEnum.TRANSFER_MONEY.getOperation(), amount, logText);
 
         logText = String.format("%s with id %d got money (%.2f) from %s with id %d ", receiver.getName(), idReceiver, amount, sender.getName(), idSender);
 
-        logRepository.insertLogInfo(idReceiver, LogOperationEnum.transferMoney.getOperation(), amount, logText);
+        logRepository.insertLogInfo(idReceiver, LogOperationEnum.TRANSFER_MONEY.getOperation(), amount, logText);
 
         List<Account> requestList = new ArrayList<>();
+
         requestList.add(accountRepository.findAccountById(idSender));
+
         requestList.add(accountRepository.findAccountById(idReceiver));
 
         return requestList;

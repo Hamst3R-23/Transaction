@@ -25,7 +25,7 @@ public class LogService {
         this.pagingAndSortingValidator = pagingAndSortingValidator;
     }
 
-    public List<Log> getAllLog(Integer pageNo, Integer pageSize, String sortBy, String orderQue, long accountid) {
+    public List<Log> getAllLog(Integer pageNo, Integer pageSize, String sortBy, String orderQue, long accountid) throws ClassNotFoundException {
 
         pagingAndSortingValidator.checkPagingAndSortingParams(sortBy, orderQue, accountid);
 
@@ -37,7 +37,7 @@ public class LogService {
         if (pageResult.hasContent()) {
             return pageResult.getContent();
         } else {
-            return new ArrayList<Log>();
+            return new ArrayList<>();
         }
     }
 

@@ -26,6 +26,7 @@ public class AccountService {
         this.logRepository = logRepository;
     }
 
+    @Transactional
     public void setAccount(String name) {
         setAccount(name, BigDecimal.ZERO);
     }
@@ -37,36 +38,31 @@ public class AccountService {
         account.setAmount(amount);
         accountRepository.save(account);
         logText = String.format("New account created: name: %s with id: %d", name, account.getId());
-        logRepository.insertLogInfo(account.getId(), "setAccount", amount, logText);
+        logRepository.insertLogInfo(account.getId(), LogOperationEnum.SET_ACCOUNT.getOperation(), amount, logText);
     }
 
     @Transactional
     public void deleteAccount(String name) {
-        if (!accountRepository.checkAccountByName(name)) {
-            throw new AccountNotFoundException("Wrong name!");
-        }
-        logText = String.format("Delete account: name: %s with id: %d", name, accountRepository.findAccountByName(name));
-        logRepository.insertLogInfo(accountRepository.findAccountByName(name), LogOperationEnum.deleteAccount.getOperation(), BigDecimal.ZERO, logText);
-        accountRepository.deleteAccountByName(name);
+        Account account = accountRepository.findAccountByName(name).orElseThrow(() -> new AccountNotFoundException("Wrong name!"));
+        logText = String.format("Delete account: name: %s with id: %d", name, account.getId());
+        logRepository.insertLogInfo(account.getId(), LogOperationEnum.DELETE_ACCOUNT.getOperation(), account.getAmount(), logText);
+        accountRepository.deleteAccountByName(account.getName());
     }
 
-    public Iterable<Account> getAllAccounts() {
-        return accountRepository.findAll();
+    public List<Account> getAllAccounts() {
+        return (List<Account>) accountRepository.findAll();
     }
 
     public List<Account> findAccountById(long id) {
-        if (!accountRepository.checkAccountById(id)) {
-            throw new AccountNotFoundException("Wrong ID!");
-        }
-        return accountRepository.findAccountsById(id);
+        Account account = accountRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Wrong ID!"));
+        return accountRepository.findAccountsById(account.getId());
     }
 
-
     public List<Account> findAccountsByName(String name) {
-        if (!accountRepository.checkAccountByName(name)) {
+        List<Account> accounts = accountRepository.findAccountsByName(name);
+        if (accounts.isEmpty()) {
             throw new AccountNotFoundException("Wrong name!");
-        }
-        return accountRepository.findAccountsByName(name);
+        } else return accounts;
     }
 
 }
