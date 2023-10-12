@@ -1,4 +1,8 @@
-package main.transaction.httprequest;
+package main.transaction.service;
+
+import main.transaction.exception.HttpRequestException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
@@ -8,11 +12,15 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
-public class HttpRequest {
+@Service
+public class CBRService {
 
-    public static String getRequest() {
+    @Value("${http.request.url}")
+    private String datasourceUrl;
+
+    public String getDailyVolute() {
         try {
-            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder(new URI("http://www.cbr.ru/scripts/XML_daily.asp"))
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder(new URI(datasourceUrl))
                     .timeout(Duration.of(5, ChronoUnit.SECONDS))
                     .build();
 
@@ -23,8 +31,7 @@ public class HttpRequest {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return (response.body());
         } catch (URISyntaxException | IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new HttpRequestException("Http request exeption");
         }
     }
-
 }

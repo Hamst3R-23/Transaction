@@ -6,8 +6,7 @@ public class Valute {
 
     private String name; //USD
 
-    private BigDecimal value;
-
+    private BigDecimal value = BigDecimal.ZERO;
 
     public String getName() {
         return name;
@@ -32,4 +31,5 @@ public class Valute {
                 ", value=" + value +
                 '}';
     }
+
 }

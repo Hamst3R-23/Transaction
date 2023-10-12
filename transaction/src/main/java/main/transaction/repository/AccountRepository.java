@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends CrudRepository<Account, Long> {
@@ -15,8 +16,8 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     @Query("SELECT * FROM account WHERE name = :name")
     List<Account> findAccountsByName(String name);
 
-    @Query("SELECT MAX(id) FROM account WHERE name = :name")
-    Long findAccountByName(String name);
+    @Query("SELECT * FROM account WHERE name = :name")
+    Optional<Account> findAccountByName(String name);
 
     @Modifying
     @Query("DELETE FROM account WHERE name = :name")
@@ -26,10 +27,19 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
     @Query("UPDATE account SET amount = :amount WHERE id = :id")
     void changeAmount(long id, BigDecimal amount);
 
+    @Query("SELECT EXISTS(SELECT * FROM account where name = :name)")
+    Boolean checkAccountByName(String name);
+
     @Query("SELECT EXISTS(SELECT * FROM account where id = :id)")
-    Boolean checkAccount(long id);
+    Boolean checkAccountById(long id);
 
     @Query("SELECT * FROM account where id = :id")
     List<Account> findAccountsById(long id);
+
+    @Query("SELECT * FROM account where id = :id")
+    Account findAccountById(long id);
+
+    @Query("SELECT amount FROM account where id = :id")
+    BigDecimal getAmountById(long id);
 
 }
