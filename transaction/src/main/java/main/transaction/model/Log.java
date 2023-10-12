@@ -21,10 +21,6 @@ public class Log {
     private String log;
 
 
-    public Log(String log) {
-        this.log = log;
-    }
-
     public long getId() {
         return id;
     }
@@ -72,5 +68,4 @@ public class Log {
     public void setLog(String log) {
         this.log = log;
     }
-
 }

@@ -1,16 +1,14 @@
 package main.transaction.parser;
 
-import main.transaction.exception.ParserException;
 import main.transaction.model.Valute;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 
-public class ParserXml {
+public class MyParser {
 
     public static Valute parse(String valuteName, InputSource http) {
 
@@ -19,12 +17,16 @@ public class ParserXml {
         SAXParser parser = null;
         try {
             parser = factory.newSAXParser();
-            parser.parse(http, handler);
-        } catch (ParserConfigurationException | IOException | SAXException e) {
-            throw new ParserException("Parser exception");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
+
+        try {
+            parser.parse(http, handler);
+        } catch (SAXException | IOException e) {
+            throw new RuntimeException(e);
+        }
         return handler.getValute();
     }
-
 }

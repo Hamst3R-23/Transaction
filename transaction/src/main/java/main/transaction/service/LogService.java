@@ -1,8 +1,8 @@
 package main.transaction.service;
 
+import main.transaction.model.Account;
 import main.transaction.model.Log;
 import main.transaction.repository.LogRepository;
-import main.transaction.validator.PagingAndSortingValidator;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,16 +18,12 @@ public class LogService {
 
     private final LogRepository logRepository;
 
-    private final PagingAndSortingValidator pagingAndSortingValidator;
-
-    public LogService(LogRepository logRepository, PagingAndSortingValidator pagingAndSortingValidator) {
+    public LogService(LogRepository logRepository) {
         this.logRepository = logRepository;
-        this.pagingAndSortingValidator = pagingAndSortingValidator;
     }
 
-    public List<Log> getAllLog(Integer pageNo, Integer pageSize, String sortBy, String orderQue, long accountid) throws ClassNotFoundException {
 
-        pagingAndSortingValidator.checkPagingAndSortingParams(sortBy, orderQue, accountid);
+    public List<Log> getAllAccounts(Integer pageNo, Integer pageSize, String sortBy, String orderQue, long accountid) {
 
         Order order = new Order(Sort.Direction.fromString(orderQue), sortBy);
 
@@ -37,7 +33,7 @@ public class LogService {
         if (pageResult.hasContent()) {
             return pageResult.getContent();
         } else {
-            return new ArrayList<>();
+            return new ArrayList<Log>();
         }
     }
 

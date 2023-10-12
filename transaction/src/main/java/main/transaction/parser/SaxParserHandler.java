@@ -10,9 +10,9 @@ import java.math.BigDecimal;
 
 public class SaxParserHandler extends DefaultHandler {
 
-    private static final String TAG_CHAR_CODE = "CharCode";
+    private final String TAG_CHAR_CODE = "CharCode";
 
-    private static final String TAG_VALUE = "Value";
+    private final String TAG_VALUE = "Value";
 
     private final String valuteNameHandler;
 
@@ -20,13 +20,13 @@ public class SaxParserHandler extends DefaultHandler {
 
     private String currentCharCode;
 
-    private boolean isValute = false;
-
-    Valute valute = new Valute();
+    boolean isValute = false;
 
     public SaxParserHandler(String valuteName) {
         this.valuteNameHandler = valuteName;
     }
+
+    Valute valute = new Valute();
 
     public Valute getValute() {
         return valute;
@@ -58,7 +58,6 @@ public class SaxParserHandler extends DefaultHandler {
             valute.setName(valuteNameHandler);
             valute.setValue(new BigDecimal(new String(ch, start, length).replaceAll(",", ".")));
             isValute = false;
-
         }
 
     }

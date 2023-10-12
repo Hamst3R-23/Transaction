@@ -13,6 +13,7 @@ public class Account {
 
     private BigDecimal amount;
 
+
     public long getId() {
         return id;
     }
@@ -36,5 +37,4 @@ public class Account {
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
-
 }
