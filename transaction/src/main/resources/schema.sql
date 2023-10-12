@@ -9,6 +9,6 @@ CREATE TABLE IF NOT EXISTS LOG (
     accountId BIGINT,
     operation varchar(50),
     amount double PRECISION,
-    log varchar(100),
+    log text,
     time TIMESTAMP
 );
